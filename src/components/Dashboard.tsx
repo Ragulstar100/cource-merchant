@@ -19,8 +19,10 @@ export default function Dashboard() {
 
   if (loading && !dashboardStats) {
     return (
-      <Box padding="1200" style={{ display: 'flex', justifyContent: 'center' }}>
-        <Spinner accessibilityLabel="Loading dashboard statistics" size="large" />
+      <Box padding="1200">
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Spinner accessibilityLabel="Loading dashboard statistics" size="large" />
+        </div>
       </Box>
     );
   }

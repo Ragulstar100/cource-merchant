@@ -131,13 +131,15 @@ export default function Login() {
             </FormLayout>
           </form>
 
-          <Box paddingBlockStart="400" style={{ textAlign: 'center' }}>
-            <Text variant="bodyMd" as="span">
-              {isRegisterMode ? 'Already have an account? ' : "New here? "}
-              <Link onClick={toggleMode}>
-                {isRegisterMode ? 'Sign In' : 'Register your store'}
-              </Link>
-            </Text>
+          <Box paddingBlockStart="400">
+            <div style={{ textAlign: 'center' }}>
+              <Text variant="bodyMd" as="span">
+                {isRegisterMode ? 'Already have an account? ' : "New here? "}
+                <Link onClick={toggleMode}>
+                  {isRegisterMode ? 'Sign In' : 'Register your store'}
+                </Link>
+              </Text>
+            </div>
           </Box>
         </Card>
       </Box>

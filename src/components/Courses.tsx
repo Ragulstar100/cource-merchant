@@ -137,14 +137,18 @@ export default function Courses() {
 
       <Card>
         {loading && courses.length === 0 ? (
-          <Box padding="1200" style={{ display: 'flex', justifyContent: 'center' }}>
-            <Spinner accessibilityLabel="Loading courses" size="large" />
+          <Box padding="1200">
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Spinner accessibilityLabel="Loading courses" size="large" />
+            </div>
           </Box>
         ) : courses.length === 0 ? (
-          <Box padding="1200" style={{ textAlign: 'center' }}>
-            <Text variant="bodyLg" as="p" tone="subdued">
-              No courses found. Click "Add Course" to create your first course.
-            </Text>
+          <Box padding="1200">
+            <div style={{ textAlign: 'center' }}>
+              <Text variant="bodyLg" as="p" tone="subdued">
+                No courses found. Click "Add Course" to create your first course.
+              </Text>
+            </div>
           </Box>
         ) : (
           <IndexTable
@@ -168,9 +172,11 @@ export default function Courses() {
                     <Text variant="bodyMd" fontWeight="semibold" as="span">
                       {course.courseTitle}
                     </Text>
-                    <Text variant="bodyXs" tone="subdued" as="span" style={{ maxWidth: '300px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {course.description}
-                    </Text>
+                    <span style={{ maxWidth: '300px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <Text variant="bodyXs" tone="subdued" as="span">
+                        {course.description}
+                      </Text>
+                    </span>
                   </BlockStack>
                 </IndexTable.Cell>
                 <IndexTable.Cell>{course.instructorName}</IndexTable.Cell>
@@ -182,7 +188,7 @@ export default function Courses() {
                   </Badge>
                 </IndexTable.Cell>
                 <IndexTable.Cell>
-                  <Text variant="bodyMd" as="span" tone={course.shopifyProductId ? 'default' : 'subdued'}>
+                  <Text variant="bodyMd" as="span" tone={course.shopifyProductId ? undefined : 'subdued'}>
                     {course.shopifyProductId || 'None'}
                   </Text>
                 </IndexTable.Cell>

@@ -155,14 +155,18 @@ export default function Enrollments() {
           </InlineStack>
 
           {loading && enrollments.length === 0 ? (
-            <Box padding="1200" style={{ display: 'flex', justifyContent: 'center' }}>
-              <Spinner accessibilityLabel="Loading enrollments" size="large" />
+            <Box padding="1200">
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Spinner accessibilityLabel="Loading enrollments" size="large" />
+              </div>
             </Box>
           ) : filteredEnrollments.length === 0 ? (
-            <Box padding="1200" style={{ textAlign: 'center' }}>
-              <Text variant="bodyLg" as="p" tone="subdued">
-                No enrollments found for this selection.
-              </Text>
+            <Box padding="1200">
+              <div style={{ textAlign: 'center' }}>
+                <Text variant="bodyLg" as="p" tone="subdued">
+                  No enrollments found for this selection.
+                </Text>
+              </div>
             </Box>
           ) : (
             <IndexTable
@@ -200,7 +204,7 @@ export default function Enrollments() {
                       <Text variant="bodyMd" as="span">
                         {enrollment.courseTitle}
                       </Text>
-                      <Badge size="small" tone="subdued">
+                      <Badge size="small">
                         {enrollment.category}
                       </Badge>
                     </IndexTable.Cell>
