@@ -1,9 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Page, Card, FormLayout, TextField, Button, Text, Box } from '@shopify/polaris';
+import { Page, Card, FormLayout, TextField, Button, Banner, Text, Box } from '@shopify/polaris';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../store';
+import { clearError } from '../store/authSlice';
 
 const API_URL = 'https://course-api-veiu.onrender.com';
 
 export default function Login() {
+  const dispatch = useDispatch();
+  const { error } = useSelector((state: RootState) => state.auth);
   const [shop, setShop] = useState('');
 
   const handleShopChange = useCallback((value: string) => setShop(value), []);
@@ -38,6 +43,12 @@ export default function Login() {
           <form action={`${API_URL}/shopify/auth`} method="GET" target="_top">
             <input type="hidden" name="shop" value={shopDomain} />
             <FormLayout>
+              {error && (
+                <Banner tone="critical" onDismiss={() => dispatch(clearError())}>
+                  <p>{error}</p>
+                </Banner>
+              )}
+
               <TextField
                 label="Shop Domain"
                 value={shop}

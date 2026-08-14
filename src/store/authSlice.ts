@@ -192,7 +192,13 @@ const authSlice = createSlice({
       })
       .addCase(fetchMerchantProfile.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload as string || 'Failed to authenticate';
+        state.token = null;
+        state.shop = null;
+        state.merchant = null;
+        localStorage.removeItem('merchant_token');
+        localStorage.removeItem('merchant_shop');
+        localStorage.removeItem('merchant_data');
       });
   },
 });
