@@ -103,7 +103,7 @@ export default function Courses() {
   }, [editMode, currentId, title, description, instructor, category, duration, status, productId, token, shop, dispatch]);
 
   const handleDelete = useCallback((id: string) => {
-    if (window.confirm('Are you sure you want to delete this course?') && token && shop) {
+    if (confirm('Are you sure you want to delete this course?') && token && shop) {
       dispatch(deleteCourse({ id, token, shop }));
     }
   }, [token, shop, dispatch]);

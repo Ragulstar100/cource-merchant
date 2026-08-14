@@ -52,7 +52,7 @@ export default function Enrollments() {
   }, [token, shop, dispatch]);
 
   const handleDelete = useCallback((id: string) => {
-    if (window.confirm('Are you sure you want to unenroll this student?') && token && shop) {
+    if (confirm('Are you sure you want to unenroll this student?') && token && shop) {
       dispatch(deleteEnrollment({ id, token, shop }));
     }
   }, [token, shop, dispatch]);

@@ -11,8 +11,6 @@ import {
   Box,
   Card,
   Text,
-  Spinner,
-  BlockStack,
 } from '@shopify/polaris';
 import { HomeIcon, ProductIcon, PersonIcon } from '@shopify/polaris-icons';
 import enTranslations from '@shopify/polaris/locales/en.json';
@@ -23,8 +21,6 @@ import Dashboard from './components/Dashboard';
 import Courses from './components/Courses';
 import Enrollments from './components/Enrollments';
 
-const API_URL = 'https://course-api-veiu.onrender.com';
-
 export default function App() {
   const dispatch = useDispatch<AppDispatch>();
   const { token, merchant } = useSelector((state: RootState) => state.auth);
@@ -32,7 +28,6 @@ export default function App() {
   // Simple routing state: 'dashboard' | 'courses' | 'enrollments'
   const [activeTab, setActiveTab] = useState<'dashboard' | 'courses' | 'enrollments'>('dashboard');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
 
   const toggleUserMenu = useCallback(() => setUserMenuOpen((open) => !open), []);
   const handleLogout = useCallback(() => {
@@ -48,30 +43,6 @@ export default function App() {
     if (tokenParam && shopParam) {
       dispatch(setAuth({ token: tokenParam, shop: shopParam }));
       dispatch(fetchMerchantProfile());
-
-      // Clean up URL query parameters
-      const cleanUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, cleanUrl);
-    } else if (shopParam && !token) {
-      // Automatic find store & install/login initiation:
-      // Redirect to initiate Shopify OAuth flow
-      setRedirecting(true);
-      let shopDomain = shopParam.trim().toLowerCase();
-      if (!shopDomain.includes('.')) {
-        shopDomain = `${shopDomain}.myshopify.com`;
-      }
-      const authUrl = `${API_URL}/shopify/auth?shop=${encodeURIComponent(shopDomain)}`;
-      
-      // Redirect using top-level window if inside iframe to prevent 'refused to connect'
-      try {
-        if (window.top && window.top !== window) {
-          window.top.location.href = authUrl;
-        } else {
-          window.location.href = authUrl;
-        }
-      } catch (e) {
-        window.location.href = authUrl;
-      }
     } else if (token) {
       dispatch(fetchMerchantProfile());
     }
@@ -143,15 +114,6 @@ export default function App() {
   };
 
   const renderFallback = () => {
-    if (redirecting) {
-      return (
-        <BlockStack gap="300" align="center">
-          <Spinner size="large" />
-          <Text variant="headingMd" as="p">Redirecting to Shopify for authentication...</Text>
-        </BlockStack>
-      );
-    }
-
     return (
       <Page narrowWidth>
         <Box paddingBlockStart="600" paddingBlockEnd="600">
