@@ -13,12 +13,17 @@ export default function Login() {
 
   const handleShopChange = useCallback((value: string) => setShop(value), []);
 
-  // Pre-populate shop from window.location.search if present
+  // Pre-populate shop from window.location.search if present, fallback to saved localStorage shop
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const shopParam = urlParams.get('shop');
     if (shopParam) {
       setShop(shopParam);
+    } else {
+      const savedShop = localStorage.getItem('merchant_shop');
+      if (savedShop) {
+        setShop(savedShop);
+      }
     }
   }, []);
 
