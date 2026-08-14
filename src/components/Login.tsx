@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { clearError, shopifyAutoLogin } from '../store/authSlice';
 
-const API_URL = 'http://localhost:1000';
+const API_URL = 'https://course-api-veiu.onrender.com';
 
 export default function Login() {
   const dispatch = useDispatch<AppDispatch>();

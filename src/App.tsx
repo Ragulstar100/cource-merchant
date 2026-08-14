@@ -20,7 +20,7 @@ import Dashboard from './components/Dashboard';
 import Courses from './components/Courses';
 import Enrollments from './components/Enrollments';
 
-const API_URL = 'http://localhost:1000';
+const API_URL = 'https://course-api-veiu.onrender.com';
 
 export default function App() {
   const dispatch = useDispatch<AppDispatch>();
