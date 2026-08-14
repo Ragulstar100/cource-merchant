@@ -6,7 +6,7 @@ export interface Merchant {
   shop: string;
   name: string | null;
   email: string | null;
-  username: string;
+  shopOwner: string | null;
 }
 
 export interface AuthState {
@@ -31,51 +31,27 @@ const initialState: AuthState = {
   error: null,
 };
 
-export const loginMerchant = createAsyncThunk(
-  'auth/loginMerchant',
-  async (credentials: { username: string; password: string }, { rejectWithValue }) => {
+export const fetchMerchantProfile = createAsyncThunk(
+  'auth/fetchMerchantProfile',
+  async (_, { getState, rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/shopify/login`, {
-        method: 'POST',
+      const state = getState() as { auth: AuthState };
+      const token = state.auth.token;
+      if (!token) throw new Error('No token found');
+
+      const response = await fetch(`${API_URL}/shopify/profile`, {
         headers: {
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(credentials),
       });
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || data.details || 'Login failed');
+        throw new Error(data.error || 'Failed to fetch profile');
       }
-      return data.merchant; // returns { shop, name, email, username, token }
+      return data; // returns { shop, name, email, shopOwner }
     } catch (err: any) {
-      return rejectWithValue(err.message || 'Server error during login');
-    }
-  }
-);
-
-export const registerMerchant = createAsyncThunk(
-  'auth/registerMerchant',
-  async (
-    payload: { shop: string; username: string; password: string; name?: string; email?: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      const response = await fetch(`${API_URL}/shopify/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || data.details || 'Registration failed');
-      }
-      return data.merchant; // returns { shop, name, email, username, token }
-    } catch (err: any) {
-      return rejectWithValue(err.message || 'Server error during registration');
+      return rejectWithValue(err.message || 'Server error fetching profile');
     }
   }
 );
@@ -84,6 +60,12 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    setAuth(state, action: PayloadAction<{ token: string; shop: string }>) {
+      state.token = action.payload.token;
+      state.shop = action.payload.shop;
+      localStorage.setItem('merchant_token', action.payload.token);
+      localStorage.setItem('merchant_shop', action.payload.shop);
+    },
     logout(state) {
       state.token = null;
       state.shop = null;
@@ -99,54 +81,29 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Login
-      .addCase(loginMerchant.pending, (state) => {
+      // Fetch Profile
+      .addCase(fetchMerchantProfile.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginMerchant.fulfilled, (state, action: PayloadAction<any>) => {
+      .addCase(fetchMerchantProfile.fulfilled, (state, action: PayloadAction<Merchant>) => {
         state.loading = false;
-        state.token = action.payload.token;
-        state.shop = action.payload.shop;
-        state.merchant = {
-          shop: action.payload.shop,
-          name: action.payload.name,
-          email: action.payload.email,
-          username: action.payload.username,
-        };
-        localStorage.setItem('merchant_token', action.payload.token);
-        localStorage.setItem('merchant_shop', action.payload.shop);
-        localStorage.setItem('merchant_data', JSON.stringify(state.merchant));
+        state.merchant = action.payload;
+        localStorage.setItem('merchant_data', JSON.stringify(action.payload));
       })
-      .addCase(loginMerchant.rejected, (state, action) => {
+      .addCase(fetchMerchantProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-      })
-      // Register
-      .addCase(registerMerchant.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(registerMerchant.fulfilled, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.token = action.payload.token;
-        state.shop = action.payload.shop;
-        state.merchant = {
-          shop: action.payload.shop,
-          name: action.payload.name,
-          email: action.payload.email,
-          username: action.payload.username,
-        };
-        localStorage.setItem('merchant_token', action.payload.token);
-        localStorage.setItem('merchant_shop', action.payload.shop);
-        localStorage.setItem('merchant_data', JSON.stringify(state.merchant));
-      })
-      .addCase(registerMerchant.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        // Invalidate session on authorization error
+        state.token = null;
+        state.shop = null;
+        state.merchant = null;
+        localStorage.removeItem('merchant_token');
+        localStorage.removeItem('merchant_shop');
+        localStorage.removeItem('merchant_data');
       });
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { setAuth, logout, clearError } = authSlice.actions;
 export default authSlice.reducer;

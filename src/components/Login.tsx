@@ -1,54 +1,46 @@
 import { useState, useCallback } from 'react';
-import { Page, Card, FormLayout, TextField, Button, Banner, Link, Text, Box } from '@shopify/polaris';
+import { Page, Card, FormLayout, TextField, Button, Banner, Text, Box } from '@shopify/polaris';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
-import { loginMerchant, registerMerchant, clearError } from '../store/authSlice';
+import { clearError } from '../store/authSlice';
+
+const API_URL = 'https://course-api-veiu.onrender.com';
 
 export default function Login() {
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error } = useSelector((state: RootState) => state.auth);
-
-  const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [shop, setShop] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
 
-  const handleUsernameChange = useCallback((value: string) => setUsername(value), []);
-  const handlePasswordChange = useCallback((value: string) => setPassword(value), []);
   const handleShopChange = useCallback((value: string) => setShop(value), []);
-  const handleNameChange = useCallback((value: string) => setName(value), []);
-  const handleEmailChange = useCallback((value: string) => setEmail(value), []);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
       dispatch(clearError());
 
-      if (isRegisterMode) {
-        if (!shop || !username || !password) return;
-        dispatch(
-          registerMerchant({
-            shop,
-            username,
-            password,
-            name: name || undefined,
-            email: email || undefined,
-          })
-        );
-      } else {
-        if (!username || !password) return;
-        dispatch(loginMerchant({ username, password }));
+      if (!shop) return;
+
+      let shopDomain = shop.trim().toLowerCase();
+      if (!shopDomain.includes('.')) {
+        shopDomain = `${shopDomain}.myshopify.com`;
+      }
+
+      // Redirect browser window directly to backend initiating Shopify OAuth flow
+      const authUrl = `${API_URL}/shopify/auth?shop=${encodeURIComponent(shopDomain)}`;
+      
+      // Redirect using top-level window if inside iframe to prevent 'refused to connect'
+      try {
+        if (window.top && window.top !== window) {
+          window.top.location.href = authUrl;
+        } else {
+          window.location.href = authUrl;
+        }
+      } catch (e) {
+        window.location.href = authUrl;
       }
     },
-    [isRegisterMode, username, password, shop, name, email, dispatch]
+    [shop, dispatch]
   );
-
-  const toggleMode = useCallback(() => {
-    setIsRegisterMode((mode) => !mode);
-    dispatch(clearError());
-  }, [dispatch]);
 
   return (
     <Page narrowWidth>
@@ -58,9 +50,7 @@ export default function Login() {
             Merchant Portal
           </Text>
           <Text variant="bodyMd" as="p" tone="subdued">
-            {isRegisterMode
-              ? 'Register your Shopify store and create your admin account'
-              : 'Log in to manage your academy, courses, and students'}
+            Log in or install the application using your Shopify store domain
           </Text>
         </div>
 
@@ -73,74 +63,21 @@ export default function Login() {
                 </Banner>
               )}
 
-              {isRegisterMode && (
-                <TextField
-                  label="Shop Domain"
-                  value={shop}
-                  onChange={handleShopChange}
-                  autoComplete="off"
-                  placeholder="quickstart-shop.myshopify.com"
-                  helpText="Enter your shopify store domain name."
-                  requiredIndicator
-                />
-              )}
-
               <TextField
-                label="Username"
-                value={username}
-                onChange={handleUsernameChange}
-                autoComplete="username"
-                placeholder="e.g. admin"
+                label="Shop Domain"
+                value={shop}
+                onChange={handleShopChange}
+                autoComplete="off"
+                placeholder="quickstart-shop.myshopify.com"
+                helpText="Enter your Shopify store domain name (e.g. storename.myshopify.com)."
                 requiredIndicator
               />
-
-              <TextField
-                label="Password"
-                type="password"
-                value={password}
-                onChange={handlePasswordChange}
-                autoComplete="current-password"
-                placeholder="••••••••"
-                requiredIndicator
-              />
-
-              {isRegisterMode && (
-                <>
-                  <TextField
-                    label="Merchant Name"
-                    value={name}
-                    onChange={handleNameChange}
-                    autoComplete="name"
-                    placeholder="e.g. Acme Academy"
-                  />
-
-                  <TextField
-                    label="Email Address"
-                    type="email"
-                    value={email}
-                    onChange={handleEmailChange}
-                    autoComplete="email"
-                    placeholder="e.g. admin@acme.com"
-                  />
-                </>
-              )}
 
               <Button submit variant="primary" loading={loading} fullWidth size="large">
-                {isRegisterMode ? 'Register Store' : 'Log In'}
+                Login / Install with Shopify
               </Button>
             </FormLayout>
           </form>
-
-          <Box paddingBlockStart="400">
-            <div style={{ textAlign: 'center' }}>
-              <Text variant="bodyMd" as="span">
-                {isRegisterMode ? 'Already have an account? ' : "New here? "}
-                <Link onClick={toggleMode}>
-                  {isRegisterMode ? 'Sign In' : 'Register your store'}
-                </Link>
-              </Text>
-            </div>
-          </Box>
         </Card>
       </Box>
     </Page>
