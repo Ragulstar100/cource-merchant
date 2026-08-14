@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 
-const API_URL = 'https://course-api-veiu.onrender.com';
+const API_URL = 'http://localhost:1000';
 
 export interface Merchant {
   shop: string;
@@ -106,6 +106,24 @@ export const fetchMerchantProfile = createAsyncThunk(
   }
 );
 
+export const shopifyAutoLogin = createAsyncThunk(
+  'auth/shopifyAutoLogin',
+  async (shop: string, { dispatch, rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_URL}/shopify/auto-login?shop=${encodeURIComponent(shop)}`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Auto-login failed');
+      }
+      dispatch(setAuth({ token: data.token, shop }));
+      dispatch(fetchMerchantProfile());
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message || 'Failed to auto-login');
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -199,6 +217,18 @@ const authSlice = createSlice({
         localStorage.removeItem('merchant_token');
         localStorage.removeItem('merchant_shop');
         localStorage.removeItem('merchant_data');
+      })
+      // Auto Login
+      .addCase(shopifyAutoLogin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(shopifyAutoLogin.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(shopifyAutoLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

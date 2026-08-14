@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from './store';
-import { logout, setAuth, fetchMerchantProfile } from './store/authSlice';
+import { logout, setAuth, fetchMerchantProfile, shopifyAutoLogin } from './store/authSlice';
 import {
   AppProvider,
   Frame,
@@ -42,6 +42,9 @@ export default function App() {
     if (tokenParam && shopParam) {
       dispatch(setAuth({ token: tokenParam, shop: shopParam }));
       dispatch(fetchMerchantProfile());
+    } else if (shopParam && !token) {
+      // Automatically log in by communicating with the local backend using shopifyAutoLogin
+      dispatch(shopifyAutoLogin(shopParam));
     } else if (token) {
       dispatch(fetchMerchantProfile());
     }

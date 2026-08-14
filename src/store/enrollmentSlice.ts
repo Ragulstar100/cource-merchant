@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 
-const API_URL = 'https://course-api-veiu.onrender.com';
+const API_URL = 'http://localhost:1000';
 
 export interface EnrollmentDetails {
   id: string;

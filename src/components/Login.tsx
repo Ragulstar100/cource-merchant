@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
 import { clearError } from '../store/authSlice';
 
-const API_URL = 'https://course-api-veiu.onrender.com';
+const API_URL = 'http://localhost:1000';
 
 export default function Login() {
   const dispatch = useDispatch();
