@@ -93,11 +93,11 @@ export default function Courses() {
 
     if (editMode && currentId) {
       dispatch(editCourse({ id: currentId, course: coursePayload, token, shop })).then((res) => {
-        if (!res.hasOwnProperty('error')) setModalOpen(false);
+        if (editCourse.fulfilled.match(res)) setModalOpen(false);
       });
     } else {
       dispatch(addCourse({ course: coursePayload, token, shop })).then((res) => {
-        if (!res.hasOwnProperty('error')) setModalOpen(false);
+        if (addCourse.fulfilled.match(res)) setModalOpen(false);
       });
     }
   }, [editMode, currentId, title, description, instructor, category, duration, status, productId, token, shop, dispatch]);

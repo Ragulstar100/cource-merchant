@@ -33,7 +33,7 @@ export default function App() {
     dispatch(logout());
   }, [dispatch]);
 
-  // Handle URL query parameters for Shopify OAuth completion redirect
+  // Handle URL query parameters for Shopify OAuth completion redirect, or trigger auto-login
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tokenParam = urlParams.get('token');
@@ -45,7 +45,13 @@ export default function App() {
     } else if (shopParam && !token) {
       // Automatically log in by communicating with the local backend using shopifyAutoLogin
       dispatch(shopifyAutoLogin(shopParam));
-    } else if (token) {
+    } else if (!token) {
+      // If we have a saved shop domain from a previous installation/login, log in automatically
+      const savedShop = localStorage.getItem('merchant_shop');
+      if (savedShop) {
+        dispatch(shopifyAutoLogin(savedShop));
+      }
+    } else {
       dispatch(fetchMerchantProfile());
     }
   }, [dispatch, token]);

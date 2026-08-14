@@ -1,36 +1,39 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Page, Card, FormLayout, TextField, Button, Banner, Text, Box } from '@shopify/polaris';
 import { useSelector, useDispatch } from 'react-redux';
-import type { RootState } from '../store';
-import { clearError } from '../store/authSlice';
-
-const API_URL = 'http://localhost:1000';
+import type { RootState, AppDispatch } from '../store';
+import { clearError, shopifyAutoLogin } from '../store/authSlice';
 
 export default function Login() {
-  const dispatch = useDispatch();
-  const { error } = useSelector((state: RootState) => state.auth);
-  const [shop, setShop] = useState('');
-
-  const handleShopChange = useCallback((value: string) => setShop(value), []);
-
-  // Pre-populate shop from window.location.search if present, fallback to saved localStorage shop
-  useEffect(() => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { error, loading } = useSelector((state: RootState) => state.auth);
+  
+  const [shop, setShop] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const shopParam = urlParams.get('shop');
-    if (shopParam) {
-      setShop(shopParam);
-    } else {
-      const savedShop = localStorage.getItem('merchant_shop');
-      if (savedShop) {
-        setShop(savedShop);
-      }
-    }
-  }, []);
+    if (shopParam) return shopParam;
+    
+    const savedShop = localStorage.getItem('merchant_shop');
+    if (savedShop) return savedShop;
+    
+    return 'quickstart-shop.myshopify.com';
+  });
+
+  const handleShopChange = useCallback((value: string) => setShop(value), []);
 
   let shopDomain = shop.trim().toLowerCase();
   if (shopDomain && !shopDomain.includes('.')) {
     shopDomain = `${shopDomain}.myshopify.com`;
   }
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!shopDomain) return;
+      dispatch(shopifyAutoLogin(shopDomain));
+    },
+    [dispatch, shopDomain]
+  );
 
   return (
     <Page narrowWidth>
@@ -45,8 +48,7 @@ export default function Login() {
         </div>
 
         <Card>
-          <form action={`${API_URL}/shopify/auth`} method="GET" target="_top">
-            <input type="hidden" name="shop" value={shopDomain} />
+          <form onSubmit={handleSubmit}>
             <FormLayout>
               {error && (
                 <Banner tone="critical" onDismiss={() => dispatch(clearError())}>
@@ -64,8 +66,8 @@ export default function Login() {
                 requiredIndicator
               />
 
-              <Button submit variant="primary" fullWidth size="large">
-                Login / Install with Shopify
+              <Button submit variant="primary" fullWidth size="large" loading={loading}>
+                Login & Manage Courses
               </Button>
             </FormLayout>
           </form>
