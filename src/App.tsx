@@ -20,11 +20,9 @@ import Dashboard from './components/Dashboard';
 import Courses from './components/Courses';
 import Enrollments from './components/Enrollments';
 
-const API_URL = 'https://course-api-veiu.onrender.com';
-
 export default function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const { token, shop, merchant } = useSelector((state: RootState) => state.auth);
+  const { token, merchant } = useSelector((state: RootState) => state.auth);
 
   // Simple routing state: 'dashboard' | 'courses' | 'enrollments'
   const [activeTab, setActiveTab] = useState<'dashboard' | 'courses' | 'enrollments'>('dashboard');
@@ -48,19 +46,10 @@ export default function App() {
       // Clean up URL query parameters
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
-    } else if (shopParam && (!token || shopParam !== shop)) {
-      // Automatic find store & install/login initiation:
-      // Redirect to initiate Shopify OAuth flow
-      let shopDomain = shopParam.trim().toLowerCase();
-      if (!shopDomain.includes('.')) {
-        shopDomain = `${shopDomain}.myshopify.com`;
-      }
-      const authUrl = `${API_URL}/shopify/auth?shop=${encodeURIComponent(shopDomain)}`;
-      window.location.href = authUrl;
     } else if (token) {
       dispatch(fetchMerchantProfile());
     }
-  }, [dispatch, token, shop]);
+  }, [dispatch, token]);
 
   const displayName = merchant ? (merchant.shopOwner || merchant.name || merchant.username || merchant.shop) : '';
   const initials = displayName ? displayName.substring(0, 2).toUpperCase() : 'ME';
