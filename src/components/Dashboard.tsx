@@ -17,6 +17,9 @@ export default function Dashboard() {
     }
   }, [dispatch, token, shop]);
 
+
+  
+
   if (loading && !dashboardStats) {
     return (
       <Box padding="1200">

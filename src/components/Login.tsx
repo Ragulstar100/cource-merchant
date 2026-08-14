@@ -1,6 +1,9 @@
 import { Page, Card, Text, Box } from '@shopify/polaris';
 
 export default function Login() {
+
+  return <>Hello</>
+
   return (
     <Page narrowWidth>
       <Box paddingBlockStart="600" paddingBlockEnd="600">
