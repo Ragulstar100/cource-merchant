@@ -56,17 +56,7 @@ export default function App() {
         shopDomain = `${shopDomain}.myshopify.com`;
       }
       const authUrl = `${API_URL}/shopify/auth?shop=${encodeURIComponent(shopDomain)}`;
-      
-      // Redirect using top-level window if inside iframe to prevent 'refused to connect'
-      try {
-        if (window.top && window.top !== window) {
-          window.top.location.href = authUrl;
-        } else {
-          window.location.href = authUrl;
-        }
-      } catch (e) {
-        window.location.href = authUrl;
-      }
+      window.location.href = authUrl;
     } else if (token) {
       dispatch(fetchMerchantProfile());
     }
