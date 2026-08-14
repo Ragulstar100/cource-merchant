@@ -6,7 +6,7 @@ import { Grid, Card, Text, Box, IndexTable, Badge, BlockStack, Spinner, InlineSt
 
 export default function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
-  const { token, shop } = useSelector((state: RootState) => state.auth);
+  const { token, shop, merchant } = useSelector((state: RootState) => state.auth);
   const { dashboardStats, recentEnrollments, loading } = useSelector(
     (state: RootState) => state.enrollments
   );
@@ -50,6 +50,20 @@ export default function Dashboard() {
 
   return (
     <BlockStack gap="500">
+      {/* Welcome & Store Owner banner */}
+      {merchant && (
+        <Card>
+          <BlockStack gap="100">
+            <Text variant="headingMd" as="h3">
+              Welcome back, {merchant.shopOwner || merchant.name || 'Merchant'}!
+            </Text>
+            <Text variant="bodyMd" as="p" tone="subdued">
+              Store Owner: <strong>{merchant.shopOwner || 'Not Specified'}</strong> | Store: <strong>{merchant.name || shop}</strong> ({merchant.email || 'No email'})
+            </Text>
+          </BlockStack>
+        </Card>
+      )}
+
       <Text variant="headingLg" as="h2">
         Dashboard Overview
       </Text>

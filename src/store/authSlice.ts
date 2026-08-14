@@ -7,6 +7,7 @@ export interface Merchant {
   name: string | null;
   email: string | null;
   username: string;
+  shopOwner?: string | null;
 }
 
 export interface AuthState {
@@ -80,10 +81,41 @@ export const registerMerchant = createAsyncThunk(
   }
 );
 
+export const fetchMerchantProfile = createAsyncThunk(
+  'auth/fetchMerchantProfile',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as { auth: AuthState };
+      const token = state.auth.token;
+      if (!token) throw new Error('No token found');
+
+      const response = await fetch(`${API_URL}/shopify/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch profile');
+      }
+      return data; // returns { shop, name, email, shopOwner }
+    } catch (err: any) {
+      return rejectWithValue(err.message || 'Server error fetching profile');
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    setAuth(state, action: PayloadAction<{ token: string; shop: string }>) {
+      state.token = action.payload.token;
+      state.shop = action.payload.shop;
+      localStorage.setItem('merchant_token', action.payload.token);
+      localStorage.setItem('merchant_shop', action.payload.shop);
+    },
     logout(state) {
       state.token = null;
       state.shop = null;
@@ -144,9 +176,26 @@ const authSlice = createSlice({
       .addCase(registerMerchant.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      // Fetch Profile
+      .addCase(fetchMerchantProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchMerchantProfile.fulfilled, (state, action: PayloadAction<any>) => {
+        state.loading = false;
+        state.merchant = {
+          ...state.merchant,
+          ...action.payload,
+        } as Merchant;
+        localStorage.setItem('merchant_data', JSON.stringify(state.merchant));
+      })
+      .addCase(fetchMerchantProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { setAuth, logout, clearError } = authSlice.actions;
 export default authSlice.reducer;
