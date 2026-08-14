@@ -4,6 +4,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { clearError, shopifyAutoLogin } from '../store/authSlice';
 
+const API_URL = 'http://localhost:1000';
+
 export default function Login() {
   const dispatch = useDispatch<AppDispatch>();
   const { error, loading } = useSelector((state: RootState) => state.auth);
@@ -30,7 +32,17 @@ export default function Login() {
     (e: React.FormEvent) => {
       e.preventDefault();
       if (!shopDomain) return;
-      dispatch(shopifyAutoLogin(shopDomain));
+      dispatch(shopifyAutoLogin(shopDomain))
+        .unwrap()
+        .catch(() => {
+          // If auto-login fails (app not installed/unauthorized), redirect to initiate OAuth installation
+          const authUrl = `${API_URL}/shopify/auth?shop=${encodeURIComponent(shopDomain)}`;
+          if (window.top) {
+            window.top.location.href = authUrl;
+          } else {
+            window.location.href = authUrl;
+          }
+        });
     },
     [dispatch, shopDomain]
   );

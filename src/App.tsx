@@ -20,6 +20,8 @@ import Dashboard from './components/Dashboard';
 import Courses from './components/Courses';
 import Enrollments from './components/Enrollments';
 
+const API_URL = 'http://localhost:1000';
+
 export default function App() {
   const dispatch = useDispatch<AppDispatch>();
   const { token, merchant } = useSelector((state: RootState) => state.auth);
@@ -44,12 +46,32 @@ export default function App() {
       dispatch(fetchMerchantProfile());
     } else if (shopParam && !token) {
       // Automatically log in by communicating with the local backend using shopifyAutoLogin
-      dispatch(shopifyAutoLogin(shopParam));
+      dispatch(shopifyAutoLogin(shopParam))
+        .unwrap()
+        .catch(() => {
+          // If auto-login fails (app not installed/unauthorized), redirect to initiate OAuth installation
+          const authUrl = `${API_URL}/shopify/auth?shop=${encodeURIComponent(shopParam)}`;
+          if (window.top) {
+            window.top.location.href = authUrl;
+          } else {
+            window.location.href = authUrl;
+          }
+        });
     } else if (!token) {
       // If we have a saved shop domain from a previous installation/login, log in automatically
       const savedShop = localStorage.getItem('merchant_shop');
       if (savedShop) {
-        dispatch(shopifyAutoLogin(savedShop));
+        dispatch(shopifyAutoLogin(savedShop))
+          .unwrap()
+          .catch(() => {
+            // If saved shop auto-login fails, redirect to OAuth installation
+            const authUrl = `${API_URL}/shopify/auth?shop=${encodeURIComponent(savedShop)}`;
+            if (window.top) {
+              window.top.location.href = authUrl;
+            } else {
+              window.location.href = authUrl;
+            }
+          });
       }
     } else {
       dispatch(fetchMerchantProfile());
@@ -132,7 +154,7 @@ export default function App() {
           topBar={topBarMarkup}
           navigation={navigationMarkup}
         >
-          <Page>
+          <Page fullWidth>
             <Box paddingBlockStart="400" paddingBlockEnd="400">
               {renderContent()}
             </Box>
