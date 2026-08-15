@@ -1,7 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Set Shopify Polaris custom properties to Noto Sans */
+  --p-font-family-sans: "Noto Sans", -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
+/* 
+  Fluid root typography sizing.
+  Since Shopify Polaris components utilize CSS variables and 'rem' units for sizing,
+  adjusting the HTML element's font-size dynamically based on viewport/iframe width
+  will scale all text, paddings, and component sizes proportionally.
+*/
+html {
+  font-size: clamp(11px, 1.1vw + 2px, 16px);
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  font-family: "Noto Sans", -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   background-color: #f6f6f7;
   color: #202223;
   -webkit-font-smoothing: antialiased;
