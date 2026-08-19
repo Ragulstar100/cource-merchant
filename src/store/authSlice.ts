@@ -32,29 +32,6 @@ const initialState: AuthState = {
   error: null,
 };
 
-export const loginMerchant = createAsyncThunk(
-  'auth/loginMerchant',
-  async (credentials: { username: string; password: string }, { rejectWithValue }) => {
-    try {
-      const response = await fetch(`${API_URL}/shopify/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || data.details || 'Login failed');
-      }
-      return data.merchant; // returns { shop, name, email, username, token }
-    } catch (err: any) {
-      return rejectWithValue(err.message || 'Server error during login');
-    }
-  }
-);
-
 export const registerMerchant = createAsyncThunk(
   'auth/registerMerchant',
   async (
