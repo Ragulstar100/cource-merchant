@@ -4,8 +4,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { clearError, shopifyAutoLogin } from '../store/authSlice';
 
-const API_URL = 'https://course-api-veiu.onrender.com';
-
 export default function Login() {
   const dispatch = useDispatch<AppDispatch>();
   const { error, loading } = useSelector((state: RootState) => state.auth);
@@ -32,16 +30,11 @@ export default function Login() {
     (e: React.FormEvent) => {
       e.preventDefault();
       if (!shopDomain) return;
+      localStorage.removeItem('explicit_logout');
       dispatch(shopifyAutoLogin(shopDomain))
         .unwrap()
-        .catch(() => {
-          // If auto-login fails (app not installed/unauthorized), redirect to initiate OAuth installation
-          const authUrl = `${API_URL}/shopify/auth?shop=${encodeURIComponent(shopDomain)}`;
-          if (window.top) {
-            window.top.location.href = authUrl;
-          } else {
-            window.location.href = authUrl;
-          }
+        .catch((err) => {
+          console.error("Auto-login failed:", err);
         });
     },
     [dispatch, shopDomain]

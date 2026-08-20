@@ -20,8 +20,6 @@ import Dashboard from './components/Dashboard';
 import Courses from './components/Courses';
 import Enrollments from './components/Enrollments';
 
-const API_URL = 'https://course-api-veiu.onrender.com';
-
 export default function App() {
   const dispatch = useDispatch<AppDispatch>();
   const { token, merchant } = useSelector((state: RootState) => state.auth);
@@ -40,37 +38,27 @@ export default function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const tokenParam = urlParams.get('token');
     const shopParam = urlParams.get('shop');
+    const explicitLogout = localStorage.getItem('explicit_logout') === 'true';
 
     if (tokenParam && shopParam) {
       dispatch(setAuth({ token: tokenParam, shop: shopParam }));
       dispatch(fetchMerchantProfile());
-    } else if (shopParam && !token) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (shopParam && !token && !explicitLogout) {
       // Automatically log in by communicating with the local backend using shopifyAutoLogin
       dispatch(shopifyAutoLogin(shopParam))
         .unwrap()
-        .catch(() => {
-          // If auto-login fails (app not installed/unauthorized), redirect to initiate OAuth installation
-          const authUrl = `${API_URL}/shopify/auth?shop=${encodeURIComponent(shopParam)}`;
-          if (window.top) {
-            window.top.location.href = authUrl;
-          } else {
-            window.location.href = authUrl;
-          }
+        .catch((err) => {
+          console.error("Auto-login failed:", err);
         });
-    } else if (!token) {
+    } else if (!token && !explicitLogout) {
       // If we have a saved shop domain from a previous installation/login, log in automatically
       const savedShop = localStorage.getItem('merchant_shop');
       if (savedShop) {
         dispatch(shopifyAutoLogin(savedShop))
           .unwrap()
-          .catch(() => {
-            // If saved shop auto-login fails, redirect to OAuth installation
-            const authUrl = `${API_URL}/shopify/auth?shop=${encodeURIComponent(savedShop)}`;
-            if (window.top) {
-              window.top.location.href = authUrl;
-            } else {
-              window.location.href = authUrl;
-            }
+          .catch((err) => {
+            console.error("Auto-login failed for saved shop:", err);
           });
       }
     } else {

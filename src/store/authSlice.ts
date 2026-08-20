@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 
-const API_URL = 'https://course-api-veiu.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export interface Merchant {
   shop: string;
@@ -86,6 +86,9 @@ export const fetchMerchantProfile = createAsyncThunk(
 export const shopifyAutoLogin = createAsyncThunk(
   'auth/shopifyAutoLogin',
   async (shop: string, { dispatch, rejectWithValue }) => {
+
+
+
     try {
       const response = await fetch(`${API_URL}/shopify/auto-login?shop=${encodeURIComponent(shop)}`);
       const data = await response.json();
@@ -110,6 +113,7 @@ const authSlice = createSlice({
       state.shop = action.payload.shop;
       localStorage.setItem('merchant_token', action.payload.token);
       localStorage.setItem('merchant_shop', action.payload.shop);
+      localStorage.removeItem('explicit_logout');
     },
     logout(state) {
       state.token = null;
@@ -119,6 +123,7 @@ const authSlice = createSlice({
       localStorage.removeItem('merchant_token');
       localStorage.removeItem('merchant_shop');
       localStorage.removeItem('merchant_data');
+      localStorage.setItem('explicit_logout', 'true');
     },
     clearError(state) {
       state.error = null;
@@ -126,29 +131,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Login
-      .addCase(loginMerchant.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(loginMerchant.fulfilled, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.token = action.payload.token;
-        state.shop = action.payload.shop;
-        state.merchant = {
-          shop: action.payload.shop,
-          name: action.payload.name,
-          email: action.payload.email,
-          username: action.payload.username,
-        };
-        localStorage.setItem('merchant_token', action.payload.token);
-        localStorage.setItem('merchant_shop', action.payload.shop);
-        localStorage.setItem('merchant_data', JSON.stringify(state.merchant));
-      })
-      .addCase(loginMerchant.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
       // Register
       .addCase(registerMerchant.pending, (state) => {
         state.loading = true;
